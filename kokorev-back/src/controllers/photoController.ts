@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import Photo from '../models/Photo';
 import Group from '../models/Group';
 import { ApiResponse } from '../types/api';
+import { convertToWebP } from '../utils/imageProcessor';
 
 // Контроллер для загрузки множества фотографий
 export const uploadPhotos = async (req: Request, res: Response) => {
@@ -41,9 +42,16 @@ export const uploadPhotos = async (req: Request, res: Response) => {
           throw new Error('Группа не найдена');
         }
 
+        // Конвертируем изображение в WebP
+        const webpBase64 = await convertToWebP(base64Data, {
+          quality: 80, // Качество WebP (0-100)
+          width: 1920, // Максимальная ширина
+          height: 1080 // Максимальная высота
+        });
+
         return Photo.create({
           filename,
-          base64Data,
+          base64Data: webpBase64,
           groupId: parseInt(groupId),
           uploadedBy: req.user!.id,
           isPreview: !hasPreview && index === 0, // Устанавливаем превью только если в группе нет превью и это первая фотография в загрузке
@@ -51,21 +59,10 @@ export const uploadPhotos = async (req: Request, res: Response) => {
       })
     );
 
-    res.status(201).json({
-      message: 'Фотографии успешно загружены',
-      photos: uploadedPhotos.map(photo => ({
-        id: photo.id,
-        filename: photo.filename,
-        base64Data: photo.base64Data,
-        groupId: photo.groupId,
-        isPreview: photo.isPreview,
-        createdAt: photo.createdAt,
-        updatedAt: photo.updatedAt
-      }))
-    });
+    return res.status(201).json({ data: uploadedPhotos });
   } catch (error) {
-    console.error('Ошибка при загрузке фотографий:', error);
-    res.status(500).json({ message: 'Ошибка при загрузке фотографий' });
+    console.error('Error uploading photos:', error);
+    return res.status(500).json({ error: 'Ошибка при загрузке фотографий' });
   }
 };
 

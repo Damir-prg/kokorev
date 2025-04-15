@@ -28,7 +28,7 @@ const startServer = async () => {
     setupAssociations();
 
     // Синхронизация моделей с базой данных
-    await sequelize.sync({ alter: true });
+    await sequelize.sync({ alter: true,force: true });
 
     // Запуск миграций
     await runMigrations(sequelize);
