@@ -100,7 +100,7 @@ const DynamicPage = () => {
         backdrop={'blur'}
         isOpen={Boolean(selectedPhoto)}
         scrollBehavior="inside"
-        size="xl"
+        size="full"
         onClose={() => {
           onClose();
           setSelectedPhoto(null);
@@ -111,7 +111,7 @@ const DynamicPage = () => {
             <>
               <ModalBody>
                 {selectedPhoto && (
-                  <div className="w-full h-[calc(100vh-4rem)] flex items-center justify-center">
+                  <div className="w-full h-full flex items-center justify-center">
                     <img
                       alt={group.title}
                       className="max-w-full max-h-full object-contain"
